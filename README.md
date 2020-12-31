@@ -43,3 +43,24 @@ Slack API から HTTP POST を受け取って処理を実行する部分。今�
 1. レスポンス返却後、インスタンス変数に格納した情報を元にhtmlファイルを書き換えてコミットを積む
 
 先にレスポンスを返してからファイル編集の処理を行っているのはスラッシュコマンドのタイムアウト除けのため。3秒以内にレスポンスを返せなければタイムアウトとして処理されてしまうから。
+
+### デプロイ手順
+備忘録として、簡単にデプロイ手順を記しておく。
+
+* bookshelf アプリのソースを zip に固める
+
+      cd bookshelf
+      zip ../bookshelf.zip -r * .[^.gD]*
+
+* AWS Elastic Beanstalk でアプリケーションを作成
+  * プラットフォームは Ruby 2.7（2020/12/31現在での最新版）を選択
+  * ソースはアップロードを選択し、bookshelf.zipをアップロードする
+  * 作成したアプリの [設定] からソフトウェア設定の編集画面に行き、以下の環境変数を登録する
+    * GIT_REPOSITORY_URI: ホームページのリポジトリのURI。認証を通すために、`https://USER_NAME:PASSWORD@github.com/USER_NAME/REPOSITORY_NAME.git` というフォーマットにしておく。
+    * GIT_USER_NAME: コミットを積むユーザー名。多分なんでもいいので、適当に bookshelf とかにしておけばいいと思う。
+    * GIT_USER_EMAIL: コミットを積むユーザーのメールアドレス。多分なんでもいいので、適当に自分のメアドとかを入れておけばいいと思う。
+  * デプロイ完了後、Elastic Beanstalkのアプリケーション管理画面に表示されているアプリケーションのURLを踏んで画面に OK と表示されていればデプロイは成功
+* Slack API で bookshelf アプリを作成し、Slask Commands タブからスラッシュコマンドを新規作成
+  * Request URL には Elastic Beanstalk で作成したアプリケーションのURL の末尾に `/add` を加えたものを設定
+* bookshelf アプリを Slack にインストール
+  * Slack API の bookshelf アプリ管理画面の Install App タブから、好きなワークスペースにアプリをインストールする
